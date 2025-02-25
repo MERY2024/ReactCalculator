@@ -32,7 +32,7 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:latest
 
   deploy:
-    needs: build  # Ensure this job runs after the build job
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -41,8 +41,13 @@ jobs:
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
 
+      - name: Debug kubeconfig
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > kubeconfig.yaml
+          cat kubeconfig.yaml
+
       - name: Deploy to Kubernetes
         run: |
-          echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig.yaml
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > kubeconfig.yaml
           export KUBECONFIG=kubeconfig.yaml
           kubectl apply -f kubernetes/
