@@ -5,6 +5,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: traefik
 spec:
+  ingressClassName: traefik  # Ajoute cette ligne
   rules:
   - host: react-app.local
     http:
