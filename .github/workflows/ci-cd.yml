@@ -9,7 +9,31 @@ on:
       - main
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: build-image
+        run: |
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:$IMAGE_TAG .
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/react-app:$IMAGE_TAG
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -23,42 +47,24 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 --decode > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
-          # Start the SSH agent
           eval "$(ssh-agent -s)"
-
-          # Add the private key to the SSH agent
           ssh-add ~/.ssh/id_rsa
-
-          # Add the bastion host's public key to known_hosts
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
-
-      - name: Debug known_hosts
-        run: |
-          cat ~/.ssh/known_hosts
-
-      - name: Test SSH connection
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ec2-user@54.170.4.216 echo "SSH connection successful"
 
       - name: Forward traffic to Kubernetes API server
         run: |
           ssh -i ~/.ssh/id_rsa -L 6443:10.0.1.240:6443 -f -N ec2-user@54.170.4.216
 
-      - name: Test SSH tunnel
-        run: |
-          curl -k https://localhost:6443
-
       - name: Debug kubeconfig
         run: |
           echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > kubeconfig.yaml
-          cat kubeconfig.yaml
+          kubectl --kubeconfig=kubeconfig.yaml config view
 
       - name: Deploy to Kubernetes
         run: |
           export KUBECONFIG=kubeconfig.yaml
-          kubectl apply -f kubernetes/
-          kubectl rollout status deployment/react-app
+          kubectl set image deployment/react-app react-app=${{ secrets.DOCKER_HUB_USERNAME }}/react-app:$IMAGE_TAG
+          kubectl rollout restart deployment/react-app
 
       - name: Verify deployment
         run: |
