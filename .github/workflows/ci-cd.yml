@@ -41,12 +41,22 @@ jobs:
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
 
+      - name: Set up SSH tunneling
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Forward traffic to Kubernetes API server
+        run: |
+          ssh -i ~/.ssh/id_rsa -L 6443:10.0.1.240:6443 -f -N ec2-user@54.170.4.216
+
       - name: Debug kubeconfig
         run: |
           echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > kubeconfig.yaml
-          cat kubeconfig.yaml
+          kubectl --kubeconfig=kubeconfig.yaml config view
 
       - name: Deploy to Kubernetes
         run: |
           export KUBECONFIG=kubeconfig.yaml
           kubectl apply -f kubernetes/
+          kubectl rollout status deployment/<your-deployment-name>
