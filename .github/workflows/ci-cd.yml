@@ -52,7 +52,7 @@ jobs:
       - name: Debug kubeconfig
         run: |
           echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > kubeconfig.yaml
-          kubectl --kubeconfig=kubeconfig.yaml config view
+          cat kubeconfig.yaml
 
       - name: Deploy to Kubernetes
         run: |
