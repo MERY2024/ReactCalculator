@@ -33,6 +33,7 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
