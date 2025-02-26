@@ -78,13 +78,16 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > kubeconfig.yaml
           cat kubeconfig.yaml
 
-      - name: Deploy to Kubernetes
+      - name: Update Kubernetes deployment with new image
         run: |
           export KUBECONFIG=kubeconfig.yaml
-          kubectl apply -f kubernetes/
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+          kubectl set image deployment/react-app react-app=${{ secrets.DOCKER_HUB_USERNAME }}/react-app:$IMAGE_TAG --record
           kubectl rollout status deployment/react-app
 
       - name: Verify deployment
         run: |
           export KUBECONFIG=kubeconfig.yaml
           kubectl get deployments
+          kubectl describe deployment react-app
+          kubectl get pods
