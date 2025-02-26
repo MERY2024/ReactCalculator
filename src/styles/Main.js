@@ -14,7 +14,7 @@ export const Container = styled.div`
 
 export const Screen = styled.div`
   grid-column: 1 / -1;
-  background-color: rgba(39, 5, 16, 0.75);
+  background-color: rgba(41, 8, 50, 0.75);
   display: flex;
   justify-content: space-around;
   flex-direction: column;

@@ -82,7 +82,7 @@ const Calculator = () => {
           ÷
         </Button>
         <Button data={7} onClick={appendValueHandler}>
-          77
+          7
         </Button>
         <Button data={8} onClick={appendValueHandler}>
           8
