@@ -42,9 +42,11 @@ jobs:
         uses: azure/setup-kubectl@v3
 
       - name: Set up SSH tunneling
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 --decode > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-add ~/.ssh/id_rsa
 
       - name: Forward traffic to Kubernetes API server
         run: |
