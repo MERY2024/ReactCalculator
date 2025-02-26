@@ -16,7 +16,7 @@ spec:
         - name: react-app
           image: meriem899/react-app:latest
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           resources:
             limits:
               cpu: "500m"
