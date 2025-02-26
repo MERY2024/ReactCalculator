@@ -14,8 +14,7 @@ spec:
     spec:
       containers:
         - name: react-app
-          image: meriem899/react-app:latest  # This will be updated dynamically in CI/CD
-          imagePullPolicy: Always  # Ensure the latest image is always pulled
+          image: meriem899/react-app:latest
           ports:
             - containerPort: 80
           resources:
