@@ -91,3 +91,15 @@ jobs:
           kubectl get deployments
           kubectl describe deployment react-app
           kubectl get pods
+
+      - name: Apply Kubernetes manifests
+        run: |
+          export KUBECONFIG=kubeconfig.yaml
+          kubectl apply -f deployment.yaml
+          kubectl apply -f service.yaml
+
+      - name: Verify Pods and Services
+        run: |
+          export KUBECONFIG=kubeconfig.yaml
+          kubectl get pods
+          kubectl get svc
